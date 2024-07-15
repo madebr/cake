@@ -7,14 +7,35 @@ permissions:
 
 jobs:
   linux-gcc:
+    name: ${{ matrix.job.name }}
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        job:
+          - { name: 'Linux 32-bit', cc: gcc, cflags: '-m32', apt: 'gcc-multilib' }
+          - { name: 'Linux 64-bit', cc: gcc, cflags: '-m64' }
     steps:
     - uses: actions/checkout@v4
     - run: gcc --version
+    - name:
+      run: |
+        echo | ${{ matrix.job.cc }} ${{ matrix.job.cflags }} -v -E -
+    - name: Install apt-get packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install ninja-build ${{ matrix.job.apt }}
+    - name: Build and test (CMake)
+      run: |
+        cmake -S src -B build -DCMAKE_C_COMPILER="${{ matrix.job.cc }}" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="${{ matrix.job.cflags }}" -GNinja
+        cmake --build build --verbose
+        cat build/cakeconfig.h
+        ctest --test-dir build -V
     - name: Build and test
+      if: ${{ always() }}
       run: |
         cd src
-        gcc -DTEST build.c -o build
+        ${{ matrix.job.cc }} -DTEST build.c -o build
         ./build
 
   windows-msvc:
@@ -24,7 +45,17 @@ jobs:
     - uses: ilammy/msvc-dev-cmd@v1.13.0
       with:
         arch: amd64_x86
+    - name: Setup ninja
+      run: |
+        Invoke-WebRequest "https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip" -OutFile "C:\temp\ninja-win.zip"
+        7z "-oC:\Windows" x "C:\temp\ninja-win.zip"
+    - name: Build and test (CMake)
+      run: |
+        cmake -S src -B build -DCMAKE_BUILD_TYPE=Debug -GNinja
+        cmake --build build --verbose
+        ctest --test-dir build -V
     - name: Build and test
+      if: ${{ always() }}
       run: |
         cd src
         cl build.c -DTEST 

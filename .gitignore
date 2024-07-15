@@ -68,6 +68,7 @@ dkms.conf
 /src/shell.c
 src/cake
 *.sarif
+cakeconfig.h
 /src/.vs/
 
 /vc/.vs/cake/FileContentIndex
@@ -75,4 +76,4 @@ src/cake
 /vc/cake/Debug
 /vc/cake/x64/Debug
 /vc/cake/DebugTest
-/tests/unit-tests/failing/_Out
+_Out

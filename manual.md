@@ -201,7 +201,7 @@ set PATH=%PATH%;%CD%
  #define __STDC_OWNERSHIP__ 1
 ```
 
-The define __STDC_OWNERSHIP__ indicates that the compiler suports owneship checks
+The define __STDC_OWNERSHIP__ indicates that the compiler suports ownership checks
 
 
 ### Pre-defined macros for MSVC compatibility
